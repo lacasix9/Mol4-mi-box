@@ -1,4 +1,4 @@
-name: Build APK - Final Clean Build
+name: Build APK - VERT FINAL
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -18,35 +18,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
+      - name: Setup Gradle 8.5
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
 
-      - name: Clean broken duplicate files
+      - name: Clean project (supprime fichiers cassés)
         run: |
           rm -f settings_1.gradle
           rm -f app/build_1.gradle
-          rm -f app/src/main/AndroidManifest_1.xml
-          rm -f app/src/main/java/com/lighttv/mol4/*_1.kt
-          rm -f app/src/main/res/layout/*_1.xml
-          rm -f app/src/main/res/drawable/*_1.xml
-          rm -f app/src/main/res/layout/activity_*_1.xml
-          rm -f app/src/main/res/layout/fragment_*_1.xml
-          rm -f app/src/main/res/layout/item_*_1.xml
-          find . -name "*_1.*" -type f -delete || true
-          echo "Nettoyage fait"
+          rm -f gradlew
+          rm -rf gradle/
+          find app/src -name "*_1.*" -delete || true
+          ls -R app/src/main/java | head -20
 
-      - name: Build APK
-        run: |
-          chmod +x gradlew 2>/dev/null || true
-          if [ -f ./gradlew ]; then
-            ./gradlew :app:assembleDebug --stacktrace
-          else
-            gradle :app:assembleDebug --stacktrace
-          fi
+      - name: Build Debug APK
+        run: gradle :app:assembleDebug --stacktrace
 
       - name: Upload APK
-        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: LightTV-APK-MiBoxS
-          path: app/build/outputs/apk/debug/*.apk
+          name: LightTV-APK-MiBoxS-VERT
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
