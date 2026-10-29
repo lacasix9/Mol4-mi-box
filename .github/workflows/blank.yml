@@ -1,4 +1,4 @@
-name: Build APK - Fix Croix Rouge Final
+name: Build APK - Final Clean Build
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Clean duplicate files that break build
+      - name: Clean broken duplicate files
         run: |
           rm -f settings_1.gradle
           rm -f app/build_1.gradle
@@ -29,17 +29,15 @@ jobs:
           rm -f app/src/main/java/com/lighttv/mol4/*_1.kt
           rm -f app/src/main/res/layout/*_1.xml
           rm -f app/src/main/res/drawable/*_1.xml
+          rm -f app/src/main/res/layout/activity_*_1.xml
           rm -f app/src/main/res/layout/fragment_*_1.xml
           rm -f app/src/main/res/layout/item_*_1.xml
-          rm -f app/src/main/res/layout/activity_*_1.xml
-          echo "Fichiers restants:"
-          ls app/src/main/java/com/lighttv/mol4/ | head -20
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew || echo "pas de gradlew, on utilisera gradle"
+          find . -name "*_1.*" -type f -delete || true
+          echo "Nettoyage fait"
 
       - name: Build APK
         run: |
+          chmod +x gradlew 2>/dev/null || true
           if [ -f ./gradlew ]; then
             ./gradlew :app:assembleDebug --stacktrace
           else
@@ -47,8 +45,8 @@ jobs:
           fi
 
       - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: LightTV-APK-MiBoxS
           path: app/build/outputs/apk/debug/*.apk
-          retention-days: 30
